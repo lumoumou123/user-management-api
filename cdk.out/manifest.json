@@ -1,0 +1,239 @@
+{
+  "version": "40.0.0",
+  "artifacts": {
+    "UserManagementApiStack.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "UserManagementApiStack.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "UserManagementApiStack": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://unknown-account/unknown-region",
+      "properties": {
+        "templateFile": "UserManagementApiStack.template.json",
+        "terminationProtection": false,
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fdbeb3db49d2cbb806e098f1367a726881a103cd69667245aad13da60f6e21e9.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "UserManagementApiStack.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-${AWS::Region}",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "UserManagementApiStack.assets"
+      ],
+      "metadata": {
+        "/UserManagementApiStack/UserPool/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserPool6BA7E5F2"
+          }
+        ],
+        "/UserManagementApiStack/UserPoolClient/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserPoolClient2F5918F7"
+          }
+        ],
+        "/UserManagementApiStack/ItemTable/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ItemTable276B2AC8"
+          }
+        ],
+        "/UserManagementApiStack/ItemLambda/ServiceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ItemLambdaServiceRole6E4F6B4B"
+          }
+        ],
+        "/UserManagementApiStack/ItemLambda/ServiceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ItemLambdaServiceRoleDefaultPolicy247662AD"
+          }
+        ],
+        "/UserManagementApiStack/ItemLambda/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ItemLambdaB9B2602D"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiB6C12381"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/CloudWatchRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiCloudWatchRoleCD3B20A5"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/Account": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiAccount52C5A50A"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/Deployment/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiDeployment248398117fd07dee2ecc78a97971811492827279"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/DeploymentStage.prod/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiDeploymentStageprod08A07725"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/Endpoint": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiEndpoint22DD5314"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/Default/items/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiitems2EE043FC"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/Default/items/POST/ApiPermission.UserManagementApiStackUserApiD537B602.POST..items": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiitemsPOSTApiPermissionUserManagementApiStackUserApiD537B602POSTitems0ECED01D"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/Default/items/POST/ApiPermission.Test.UserManagementApiStackUserApiD537B602.POST..items": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiitemsPOSTApiPermissionTestUserManagementApiStackUserApiD537B602POSTitems93DCB34A"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/Default/items/POST/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiitemsPOST3F95B2C3"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/Default/items/{partition_key}/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiitemspartitionkey385B7628"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/Default/items/{partition_key}/GET/ApiPermission.UserManagementApiStackUserApiD537B602.GET..items.{partition_key}": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiitemspartitionkeyGETApiPermissionUserManagementApiStackUserApiD537B602GETitemspartitionkeyF99C6377"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/Default/items/{partition_key}/GET/ApiPermission.Test.UserManagementApiStackUserApiD537B602.GET..items.{partition_key}": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiitemspartitionkeyGETApiPermissionTestUserManagementApiStackUserApiD537B602GETitemspartitionkey7111635A"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/Default/items/{partition_key}/GET/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiitemspartitionkeyGETE60153E4"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiitemspartitionkeysortkey10C9562A"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/PUT/ApiPermission.UserManagementApiStackUserApiD537B602.PUT..items.{partition_key}.{sort_key}": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiitemspartitionkeysortkeyPUTApiPermissionUserManagementApiStackUserApiD537B602PUTitemspartitionkeysortkeyB09A56C6"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/PUT/ApiPermission.Test.UserManagementApiStackUserApiD537B602.PUT..items.{partition_key}.{sort_key}": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiitemspartitionkeysortkeyPUTApiPermissionTestUserManagementApiStackUserApiD537B602PUTitemspartitionkeysortkeyFFE35B09"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/PUT/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiitemspartitionkeysortkeyPUTC28D9A7B"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/translation/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiitemspartitionkeysortkeytranslationDF10B0BD"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/translation/GET/ApiPermission.UserManagementApiStackUserApiD537B602.GET..items.{partition_key}.{sort_key}.translation": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiitemspartitionkeysortkeytranslationGETApiPermissionUserManagementApiStackUserApiD537B602GETitemspartitionkeysortkeytranslation8AAF42B1"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/translation/GET/ApiPermission.Test.UserManagementApiStackUserApiD537B602.GET..items.{partition_key}.{sort_key}.translation": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiitemspartitionkeysortkeytranslationGETApiPermissionTestUserManagementApiStackUserApiD537B602GETitemspartitionkeysortkeytranslation8A59554F"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/translation/GET/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiitemspartitionkeysortkeytranslationGETF59387AF"
+          }
+        ],
+        "/UserManagementApiStack/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/UserManagementApiStack/CDKMetadata/Condition": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadataAvailable"
+          }
+        ],
+        "/UserManagementApiStack/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/UserManagementApiStack/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "UserManagementApiStack"
+    },
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    }
+  }
+}
