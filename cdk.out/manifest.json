@@ -18,7 +18,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/fdbeb3db49d2cbb806e098f1367a726881a103cd69667245aad13da60f6e21e9.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/99c4101e823e02b95a955ff47a400ce97efa9f526781b036f201b8214e0e0ed5.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -91,7 +91,7 @@
         "/UserManagementApiStack/UserApi/Deployment/Resource": [
           {
             "type": "aws:cdk:logicalId",
-            "data": "UserApiDeployment248398117fd07dee2ecc78a97971811492827279"
+            "data": "UserApiDeployment248398115a6083ec1c34978478c603fd4aa92c94"
           }
         ],
         "/UserManagementApiStack/UserApi/DeploymentStage.prod/Resource": [
@@ -106,10 +106,22 @@
             "data": "UserApiEndpoint22DD5314"
           }
         ],
+        "/UserManagementApiStack/UserApi/Default/OPTIONS/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiOPTIONSC7FF09BC"
+          }
+        ],
         "/UserManagementApiStack/UserApi/Default/items/Resource": [
           {
             "type": "aws:cdk:logicalId",
             "data": "UserApiitems2EE043FC"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/Default/items/OPTIONS/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiitemsOPTIONS932920D6"
           }
         ],
         "/UserManagementApiStack/UserApi/Default/items/POST/ApiPermission.UserManagementApiStackUserApiD537B602.POST..items": [
@@ -136,6 +148,12 @@
             "data": "UserApiitemspartitionkey385B7628"
           }
         ],
+        "/UserManagementApiStack/UserApi/Default/items/{partition_key}/OPTIONS/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiitemspartitionkeyOPTIONS131661C2"
+          }
+        ],
         "/UserManagementApiStack/UserApi/Default/items/{partition_key}/GET/ApiPermission.UserManagementApiStackUserApiD537B602.GET..items.{partition_key}": [
           {
             "type": "aws:cdk:logicalId",
@@ -158,6 +176,12 @@
           {
             "type": "aws:cdk:logicalId",
             "data": "UserApiitemspartitionkeysortkey10C9562A"
+          }
+        ],
+        "/UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/OPTIONS/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiitemspartitionkeysortkeyOPTIONS8AEAA822"
           }
         ],
         "/UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/PUT/ApiPermission.UserManagementApiStackUserApiD537B602.PUT..items.{partition_key}.{sort_key}": [
@@ -184,6 +208,12 @@
             "data": "UserApiitemspartitionkeysortkeytranslationDF10B0BD"
           }
         ],
+        "/UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/translation/OPTIONS/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UserApiitemspartitionkeysortkeytranslationOPTIONS2AE6193E"
+          }
+        ],
         "/UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/translation/GET/ApiPermission.UserManagementApiStackUserApiD537B602.GET..items.{partition_key}.{sort_key}.translation": [
           {
             "type": "aws:cdk:logicalId",
@@ -200,6 +230,42 @@
           {
             "type": "aws:cdk:logicalId",
             "data": "UserApiitemspartitionkeysortkeytranslationGETF59387AF"
+          }
+        ],
+        "/UserManagementApiStack/ApiKey/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ApiKeyF9DDEE66"
+          }
+        ],
+        "/UserManagementApiStack/UsagePlan/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UsagePlanC18B28F1"
+          }
+        ],
+        "/UserManagementApiStack/UsagePlan/UsagePlanKeyResource:UserManagementApiStackApiKey913612BD": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "UsagePlanUsagePlanKeyResourceUserManagementApiStackApiKey913612BD9A278DA6"
+          }
+        ],
+        "/UserManagementApiStack/ApiUrl": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ApiUrl"
+          }
+        ],
+        "/UserManagementApiStack/ApiKeyId": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ApiKeyId"
+          }
+        ],
+        "/UserManagementApiStack/ItemTableName": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ItemTableName"
           }
         ],
         "/UserManagementApiStack/CDKMetadata/Default": [

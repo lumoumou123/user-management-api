@@ -93,8 +93,10 @@ export class UserManagementApiStack extends cdk.Stack {
     // ✅ 创建数据管理API端点
     const items = api.root.addResource('items'); // 创建/items资源
     
-    // POST端点 - 创建新项目(目前无需API密钥)
-    items.addMethod('POST', new apigateway.LambdaIntegration(itemLambda));
+    // POST端点 - 创建新项目(添加API密钥保护)
+    items.addMethod('POST', new apigateway.LambdaIntegration(itemLambda), {
+      apiKeyRequired: true // 要求API密钥
+    });
 
     const item = items.addResource('{partition_key}'); // 创建/items/{partition_key}资源
     
@@ -107,8 +109,10 @@ export class UserManagementApiStack extends cdk.Stack {
 
     const itemWithSortKey = item.addResource('{sort_key}'); // 创建/items/{partition_key}/{sort_key}资源
     
-    // PUT端点 - 更新项目(目前无需API密钥)
-    itemWithSortKey.addMethod('PUT', new apigateway.LambdaIntegration(itemLambda));
+    // PUT端点 - 更新项目(添加API密钥保护)
+    itemWithSortKey.addMethod('PUT', new apigateway.LambdaIntegration(itemLambda), {
+      apiKeyRequired: true // 要求API密钥
+    });
 
     // ✅ 创建翻译API端点
     const translation = itemWithSortKey.addResource('translation'); // 创建/items/{partition_key}/{sort_key}/translation资源

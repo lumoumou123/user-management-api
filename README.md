@@ -6,13 +6,23 @@ A serverless REST API built with AWS CDK, Amazon DynamoDB, Lambda, and API Gatew
 
 ### API Endpoints
 
-- **POST /items** - Add a new item to the database
+- **POST /items** - Add a new item to the database (requires API Key)
 - **GET /items/{partition_key}** - Get all items with the specified partition key
   - Optional query string parameter: `filter` to filter results by description content
-- **PUT /items/{partition_key}/{sort_key}** - Update an existing item
+- **PUT /items/{partition_key}/{sort_key}** - Update an existing item (requires API Key)
 - **GET /items/{partition_key}/{sort_key}/translation?language=XX** - Get a translated version of an item's description
   - Required query string parameter: `language` (e.g., 'fr', 'es', 'de', etc.)
   - Translations are cached to reduce costs
+
+### Security
+
+- **API Key Authentication**: The POST and PUT endpoints are protected with API key authentication
+- **API Key Header**: Include the API key in request headers using `x-api-key` header
+
+### Performance Optimization
+
+- **Translation Caching**: Translations are stored in DynamoDB to avoid redundant calls to Amazon Translate
+- **Efficient Data Structure**: DynamoDB's composite key structure enables fast lookups and queries
 
 ### Data Model
 
@@ -45,7 +55,17 @@ Items in DynamoDB have the following structure:
    cdk deploy
    ```
 
-The deployment will output the API URL and other important information.
+The deployment will output the API URL, API Key ID, and other important information.
+
+### Getting the API Key
+
+After deployment, get your API key using:
+
+```bash
+aws apigateway get-api-key --api-key YOUR_API_KEY_ID --include-value
+```
+
+Replace `YOUR_API_KEY_ID` with the API Key ID from the deployment output.
 
 ## 📝 Usage Examples
 
@@ -54,6 +74,7 @@ The deployment will output the API URL and other important information.
 ```bash
 curl -X POST https://your-api-url/items \
   -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY" \
   -d '{
     "partition_key": "user123",
     "sort_key": "profile",
@@ -80,6 +101,7 @@ curl -X GET https://your-api-url/items/user123?filter=sample
 ```bash
 curl -X PUT https://your-api-url/items/user123/profile \
   -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY" \
   -d '{
     "description": "Updated user profile description",
     "is_active": false
@@ -94,13 +116,12 @@ curl -X GET https://your-api-url/items/user123/profile/translation?language=fr
 
 ## 🏗️ Architecture
 
-- **API Gateway**: Handles HTTP requests
+- **API Gateway**: Handles HTTP requests and validates API keys
 - **Lambda**: Processes requests and interacts with DynamoDB
 - **DynamoDB**: Stores item data and cached translations
 - **Amazon Translate**: Provides translation service
 
 ## 🌐 Future Enhancements
 
-- API Key authentication for POST and PUT endpoints
 - Custom domain name
 - Additional endpoint features 

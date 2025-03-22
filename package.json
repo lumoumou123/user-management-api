@@ -7,15 +7,18 @@
     "lib": "lib"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc -p ."
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.1692.0"
+  },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.147",
     "aws-cdk-lib": "^2.184.1",
-    "aws-sdk": "^2.1692.0",
     "constructs": "^10.4.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"

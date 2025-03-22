@@ -134,6 +134,33 @@
                       {
                         "attributeName": "sort_key",
                         "attributeType": "S"
+                      },
+                      {
+                        "attributeName": "original_text",
+                        "attributeType": "S"
+                      },
+                      {
+                        "attributeName": "language",
+                        "attributeType": "S"
+                      }
+                    ],
+                    "billingMode": "PAY_PER_REQUEST",
+                    "globalSecondaryIndexes": [
+                      {
+                        "indexName": "TranslationIndex",
+                        "keySchema": [
+                          {
+                            "attributeName": "original_text",
+                            "keyType": "HASH"
+                          },
+                          {
+                            "attributeName": "language",
+                            "keyType": "RANGE"
+                          }
+                        ],
+                        "projection": {
+                          "projectionType": "ALL"
+                        }
                       }
                     ],
                     "keySchema": [
@@ -145,11 +172,7 @@
                         "attributeName": "sort_key",
                         "keyType": "RANGE"
                       }
-                    ],
-                    "provisionedThroughput": {
-                      "readCapacityUnits": 5,
-                      "writeCapacityUnits": 5
-                    }
+                    ]
                   }
                 },
                 "constructInfo": {
@@ -242,6 +265,11 @@
                             "policyDocument": {
                               "Statement": [
                                 {
+                                  "Action": "translate:TranslateText",
+                                  "Effect": "Allow",
+                                  "Resource": "*"
+                                },
+                                {
                                   "Action": [
                                     "dynamodb:BatchGetItem",
                                     "dynamodb:GetRecords",
@@ -265,7 +293,18 @@
                                       ]
                                     },
                                     {
-                                      "Ref": "AWS::NoValue"
+                                      "Fn::Join": [
+                                        "",
+                                        [
+                                          {
+                                            "Fn::GetAtt": [
+                                              "ItemTable276B2AC8",
+                                              "Arn"
+                                            ]
+                                          },
+                                          "/index/*"
+                                        ]
+                                      ]
                                     }
                                   ]
                                 }
@@ -336,7 +375,7 @@
                       "s3Bucket": {
                         "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
                       },
-                      "s3Key": "716ad7593865a9a0775a5237e435aad9c340ff17dbbaba8f8d2cc7fb49ea41df.zip"
+                      "s3Key": "848e8fc7fafd8bc38415af0deb7f86d875f33306ba3de22d571e92c696210b99.zip"
                     },
                     "environment": {
                       "variables": {
@@ -502,7 +541,7 @@
                       "aws:cdk:cloudformation:type": "AWS::ApiGateway::Stage",
                       "aws:cdk:cloudformation:props": {
                         "deploymentId": {
-                          "Ref": "UserApiDeployment248398117fd07dee2ecc78a97971811492827279"
+                          "Ref": "UserApiDeployment248398115a6083ec1c34978478c603fd4aa92c94"
                         },
                         "restApiId": {
                           "Ref": "UserApiB6C12381"
@@ -534,6 +573,68 @@
                 "id": "Default",
                 "path": "UserManagementApiStack/UserApi/Default",
                 "children": {
+                  "OPTIONS": {
+                    "id": "OPTIONS",
+                    "path": "UserManagementApiStack/UserApi/Default/OPTIONS",
+                    "children": {
+                      "Resource": {
+                        "id": "Resource",
+                        "path": "UserManagementApiStack/UserApi/Default/OPTIONS/Resource",
+                        "attributes": {
+                          "aws:cdk:cloudformation:type": "AWS::ApiGateway::Method",
+                          "aws:cdk:cloudformation:props": {
+                            "apiKeyRequired": false,
+                            "authorizationType": "NONE",
+                            "httpMethod": "OPTIONS",
+                            "integration": {
+                              "type": "MOCK",
+                              "requestTemplates": {
+                                "application/json": "{ statusCode: 200 }"
+                              },
+                              "integrationResponses": [
+                                {
+                                  "statusCode": "204",
+                                  "responseParameters": {
+                                    "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+                                    "method.response.header.Access-Control-Allow-Origin": "'*'",
+                                    "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+                                  }
+                                }
+                              ]
+                            },
+                            "methodResponses": [
+                              {
+                                "statusCode": "204",
+                                "responseParameters": {
+                                  "method.response.header.Access-Control-Allow-Headers": true,
+                                  "method.response.header.Access-Control-Allow-Origin": true,
+                                  "method.response.header.Access-Control-Allow-Methods": true
+                                }
+                              }
+                            ],
+                            "resourceId": {
+                              "Fn::GetAtt": [
+                                "UserApiB6C12381",
+                                "RootResourceId"
+                              ]
+                            },
+                            "restApiId": {
+                              "Ref": "UserApiB6C12381"
+                            }
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_apigateway.CfnMethod",
+                          "version": "2.184.1"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_apigateway.Method",
+                      "version": "2.184.1",
+                      "metadata": []
+                    }
+                  },
                   "items": {
                     "id": "items",
                     "path": "UserManagementApiStack/UserApi/Default/items",
@@ -559,6 +660,65 @@
                         "constructInfo": {
                           "fqn": "aws-cdk-lib.aws_apigateway.CfnResource",
                           "version": "2.184.1"
+                        }
+                      },
+                      "OPTIONS": {
+                        "id": "OPTIONS",
+                        "path": "UserManagementApiStack/UserApi/Default/items/OPTIONS",
+                        "children": {
+                          "Resource": {
+                            "id": "Resource",
+                            "path": "UserManagementApiStack/UserApi/Default/items/OPTIONS/Resource",
+                            "attributes": {
+                              "aws:cdk:cloudformation:type": "AWS::ApiGateway::Method",
+                              "aws:cdk:cloudformation:props": {
+                                "apiKeyRequired": false,
+                                "authorizationType": "NONE",
+                                "httpMethod": "OPTIONS",
+                                "integration": {
+                                  "type": "MOCK",
+                                  "requestTemplates": {
+                                    "application/json": "{ statusCode: 200 }"
+                                  },
+                                  "integrationResponses": [
+                                    {
+                                      "statusCode": "204",
+                                      "responseParameters": {
+                                        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+                                        "method.response.header.Access-Control-Allow-Origin": "'*'",
+                                        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+                                      }
+                                    }
+                                  ]
+                                },
+                                "methodResponses": [
+                                  {
+                                    "statusCode": "204",
+                                    "responseParameters": {
+                                      "method.response.header.Access-Control-Allow-Headers": true,
+                                      "method.response.header.Access-Control-Allow-Origin": true,
+                                      "method.response.header.Access-Control-Allow-Methods": true
+                                    }
+                                  }
+                                ],
+                                "resourceId": {
+                                  "Ref": "UserApiitems2EE043FC"
+                                },
+                                "restApiId": {
+                                  "Ref": "UserApiB6C12381"
+                                }
+                              }
+                            },
+                            "constructInfo": {
+                              "fqn": "aws-cdk-lib.aws_apigateway.CfnMethod",
+                              "version": "2.184.1"
+                            }
+                          }
+                        },
+                        "constructInfo": {
+                          "fqn": "aws-cdk-lib.aws_apigateway.Method",
+                          "version": "2.184.1",
+                          "metadata": []
                         }
                       },
                       "POST": {
@@ -665,6 +825,7 @@
                             "attributes": {
                               "aws:cdk:cloudformation:type": "AWS::ApiGateway::Method",
                               "aws:cdk:cloudformation:props": {
+                                "apiKeyRequired": true,
                                 "authorizationType": "NONE",
                                 "httpMethod": "POST",
                                 "integration": {
@@ -736,6 +897,65 @@
                             "constructInfo": {
                               "fqn": "aws-cdk-lib.aws_apigateway.CfnResource",
                               "version": "2.184.1"
+                            }
+                          },
+                          "OPTIONS": {
+                            "id": "OPTIONS",
+                            "path": "UserManagementApiStack/UserApi/Default/items/{partition_key}/OPTIONS",
+                            "children": {
+                              "Resource": {
+                                "id": "Resource",
+                                "path": "UserManagementApiStack/UserApi/Default/items/{partition_key}/OPTIONS/Resource",
+                                "attributes": {
+                                  "aws:cdk:cloudformation:type": "AWS::ApiGateway::Method",
+                                  "aws:cdk:cloudformation:props": {
+                                    "apiKeyRequired": false,
+                                    "authorizationType": "NONE",
+                                    "httpMethod": "OPTIONS",
+                                    "integration": {
+                                      "type": "MOCK",
+                                      "requestTemplates": {
+                                        "application/json": "{ statusCode: 200 }"
+                                      },
+                                      "integrationResponses": [
+                                        {
+                                          "statusCode": "204",
+                                          "responseParameters": {
+                                            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+                                            "method.response.header.Access-Control-Allow-Origin": "'*'",
+                                            "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+                                          }
+                                        }
+                                      ]
+                                    },
+                                    "methodResponses": [
+                                      {
+                                        "statusCode": "204",
+                                        "responseParameters": {
+                                          "method.response.header.Access-Control-Allow-Headers": true,
+                                          "method.response.header.Access-Control-Allow-Origin": true,
+                                          "method.response.header.Access-Control-Allow-Methods": true
+                                        }
+                                      }
+                                    ],
+                                    "resourceId": {
+                                      "Ref": "UserApiitemspartitionkey385B7628"
+                                    },
+                                    "restApiId": {
+                                      "Ref": "UserApiB6C12381"
+                                    }
+                                  }
+                                },
+                                "constructInfo": {
+                                  "fqn": "aws-cdk-lib.aws_apigateway.CfnMethod",
+                                  "version": "2.184.1"
+                                }
+                              }
+                            },
+                            "constructInfo": {
+                              "fqn": "aws-cdk-lib.aws_apigateway.Method",
+                              "version": "2.184.1",
+                              "metadata": []
                             }
                           },
                           "GET": {
@@ -871,6 +1091,9 @@
                                       },
                                       "integrationHttpMethod": "POST"
                                     },
+                                    "requestParameters": {
+                                      "method.request.querystring.filter": false
+                                    },
                                     "resourceId": {
                                       "Ref": "UserApiitemspartitionkey385B7628"
                                     },
@@ -913,6 +1136,65 @@
                                 "constructInfo": {
                                   "fqn": "aws-cdk-lib.aws_apigateway.CfnResource",
                                   "version": "2.184.1"
+                                }
+                              },
+                              "OPTIONS": {
+                                "id": "OPTIONS",
+                                "path": "UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/OPTIONS",
+                                "children": {
+                                  "Resource": {
+                                    "id": "Resource",
+                                    "path": "UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/OPTIONS/Resource",
+                                    "attributes": {
+                                      "aws:cdk:cloudformation:type": "AWS::ApiGateway::Method",
+                                      "aws:cdk:cloudformation:props": {
+                                        "apiKeyRequired": false,
+                                        "authorizationType": "NONE",
+                                        "httpMethod": "OPTIONS",
+                                        "integration": {
+                                          "type": "MOCK",
+                                          "requestTemplates": {
+                                            "application/json": "{ statusCode: 200 }"
+                                          },
+                                          "integrationResponses": [
+                                            {
+                                              "statusCode": "204",
+                                              "responseParameters": {
+                                                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+                                                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                                                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+                                              }
+                                            }
+                                          ]
+                                        },
+                                        "methodResponses": [
+                                          {
+                                            "statusCode": "204",
+                                            "responseParameters": {
+                                              "method.response.header.Access-Control-Allow-Headers": true,
+                                              "method.response.header.Access-Control-Allow-Origin": true,
+                                              "method.response.header.Access-Control-Allow-Methods": true
+                                            }
+                                          }
+                                        ],
+                                        "resourceId": {
+                                          "Ref": "UserApiitemspartitionkeysortkey10C9562A"
+                                        },
+                                        "restApiId": {
+                                          "Ref": "UserApiB6C12381"
+                                        }
+                                      }
+                                    },
+                                    "constructInfo": {
+                                      "fqn": "aws-cdk-lib.aws_apigateway.CfnMethod",
+                                      "version": "2.184.1"
+                                    }
+                                  }
+                                },
+                                "constructInfo": {
+                                  "fqn": "aws-cdk-lib.aws_apigateway.Method",
+                                  "version": "2.184.1",
+                                  "metadata": []
                                 }
                               },
                               "PUT": {
@@ -1019,6 +1301,7 @@
                                     "attributes": {
                                       "aws:cdk:cloudformation:type": "AWS::ApiGateway::Method",
                                       "aws:cdk:cloudformation:props": {
+                                        "apiKeyRequired": true,
                                         "authorizationType": "NONE",
                                         "httpMethod": "PUT",
                                         "integration": {
@@ -1090,6 +1373,65 @@
                                     "constructInfo": {
                                       "fqn": "aws-cdk-lib.aws_apigateway.CfnResource",
                                       "version": "2.184.1"
+                                    }
+                                  },
+                                  "OPTIONS": {
+                                    "id": "OPTIONS",
+                                    "path": "UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/translation/OPTIONS",
+                                    "children": {
+                                      "Resource": {
+                                        "id": "Resource",
+                                        "path": "UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/translation/OPTIONS/Resource",
+                                        "attributes": {
+                                          "aws:cdk:cloudformation:type": "AWS::ApiGateway::Method",
+                                          "aws:cdk:cloudformation:props": {
+                                            "apiKeyRequired": false,
+                                            "authorizationType": "NONE",
+                                            "httpMethod": "OPTIONS",
+                                            "integration": {
+                                              "type": "MOCK",
+                                              "requestTemplates": {
+                                                "application/json": "{ statusCode: 200 }"
+                                              },
+                                              "integrationResponses": [
+                                                {
+                                                  "statusCode": "204",
+                                                  "responseParameters": {
+                                                    "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+                                                    "method.response.header.Access-Control-Allow-Origin": "'*'",
+                                                    "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+                                                  }
+                                                }
+                                              ]
+                                            },
+                                            "methodResponses": [
+                                              {
+                                                "statusCode": "204",
+                                                "responseParameters": {
+                                                  "method.response.header.Access-Control-Allow-Headers": true,
+                                                  "method.response.header.Access-Control-Allow-Origin": true,
+                                                  "method.response.header.Access-Control-Allow-Methods": true
+                                                }
+                                              }
+                                            ],
+                                            "resourceId": {
+                                              "Ref": "UserApiitemspartitionkeysortkeytranslationDF10B0BD"
+                                            },
+                                            "restApiId": {
+                                              "Ref": "UserApiB6C12381"
+                                            }
+                                          }
+                                        },
+                                        "constructInfo": {
+                                          "fqn": "aws-cdk-lib.aws_apigateway.CfnMethod",
+                                          "version": "2.184.1"
+                                        }
+                                      }
+                                    },
+                                    "constructInfo": {
+                                      "fqn": "aws-cdk-lib.aws_apigateway.Method",
+                                      "version": "2.184.1",
+                                      "metadata": []
                                     }
                                   },
                                   "GET": {
@@ -1225,6 +1567,9 @@
                                               },
                                               "integrationHttpMethod": "POST"
                                             },
+                                            "requestParameters": {
+                                              "method.request.querystring.language": true
+                                            },
                                             "resourceId": {
                                               "Ref": "UserApiitemspartitionkeysortkeytranslationDF10B0BD"
                                             },
@@ -1285,6 +1630,112 @@
               "fqn": "aws-cdk-lib.aws_apigateway.RestApi",
               "version": "2.184.1",
               "metadata": []
+            }
+          },
+          "ApiKey": {
+            "id": "ApiKey",
+            "path": "UserManagementApiStack/ApiKey",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "UserManagementApiStack/ApiKey/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::ApiGateway::ApiKey",
+                  "aws:cdk:cloudformation:props": {
+                    "enabled": true,
+                    "name": "UserApiKey"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_apigateway.CfnApiKey",
+                  "version": "2.184.1"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_apigateway.ApiKey",
+              "version": "2.184.1",
+              "metadata": []
+            }
+          },
+          "UsagePlan": {
+            "id": "UsagePlan",
+            "path": "UserManagementApiStack/UsagePlan",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "UserManagementApiStack/UsagePlan/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::ApiGateway::UsagePlan",
+                  "aws:cdk:cloudformation:props": {
+                    "apiStages": [
+                      {
+                        "apiId": {
+                          "Ref": "UserApiB6C12381"
+                        },
+                        "stage": {
+                          "Ref": "UserApiDeploymentStageprod08A07725"
+                        },
+                        "throttle": {}
+                      }
+                    ],
+                    "usagePlanName": "UserApiUsagePlan"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_apigateway.CfnUsagePlan",
+                  "version": "2.184.1"
+                }
+              },
+              "UsagePlanKeyResource:UserManagementApiStackApiKey913612BD": {
+                "id": "UsagePlanKeyResource:UserManagementApiStackApiKey913612BD",
+                "path": "UserManagementApiStack/UsagePlan/UsagePlanKeyResource:UserManagementApiStackApiKey913612BD",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::ApiGateway::UsagePlanKey",
+                  "aws:cdk:cloudformation:props": {
+                    "keyId": {
+                      "Ref": "ApiKeyF9DDEE66"
+                    },
+                    "keyType": "API_KEY",
+                    "usagePlanId": {
+                      "Ref": "UsagePlanC18B28F1"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_apigateway.CfnUsagePlanKey",
+                  "version": "2.184.1"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_apigateway.UsagePlan",
+              "version": "2.184.1",
+              "metadata": []
+            }
+          },
+          "ApiUrl": {
+            "id": "ApiUrl",
+            "path": "UserManagementApiStack/ApiUrl",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.184.1"
+            }
+          },
+          "ApiKeyId": {
+            "id": "ApiKeyId",
+            "path": "UserManagementApiStack/ApiKeyId",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.184.1"
+            }
+          },
+          "ItemTableName": {
+            "id": "ItemTableName",
+            "path": "UserManagementApiStack/ItemTableName",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
+              "version": "2.184.1"
             }
           },
           "CDKMetadata": {
