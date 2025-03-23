@@ -1,0 +1,11 @@
+{
+  "name": "user-management-api-common-layer",
+  "version": "1.0.0",
+  "description": "通用代码层，用于在Lambda函数之间共享",
+  "main": "index.js",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.1556.0"
+  }
+} 

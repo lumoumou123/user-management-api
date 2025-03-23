@@ -1,74 +1,73 @@
-#!/usr/bin/env node
 /**
- * Script to retrieve the API key value
+ * 获取API密钥脚本
  * 
- * This script fetches the API key ID from CloudFormation outputs
- * and then uses AWS API Gateway to retrieve the full API key value
+ * 该脚本用于从AWS获取API密钥的值，便于测试API。
+ * 它需要AWS CLI配置正确的凭证才能工作。
  */
 
-const AWS = require('aws-sdk');
 const { execSync } = require('child_process');
+const AWS = require('aws-sdk');
 
-// Configure AWS SDK
-const region = process.env.AWS_REGION || 'us-east-1';
-AWS.config.update({ region });
+// 解析命令行参数
+const args = process.argv.slice(2);
+const keyId = args[0] || process.env.API_KEY_ID;
 
-// Get the API key ID from CloudFormation outputs
-const getApiKeyId = () => {
-  try {
-    const stackOutputs = execSync('aws cloudformation describe-stacks --stack-name UserManagementApiStack --query "Stacks[0].Outputs[?OutputKey==\'ApiKeyId\'].OutputValue" --output text').toString().trim();
-    return stackOutputs;
-  } catch (error) {
-    console.error('Error getting API key ID:', error.message);
-    process.exit(1);
-  }
-};
+if (!keyId) {
+  console.error('错误: 请提供API密钥ID作为参数或设置API_KEY_ID环境变量');
+  console.error('用法: node get-api-key.js <API_KEY_ID>');
+  process.exit(1);
+}
 
-// Get the API key value
-const getApiKey = async (apiKeyId) => {
+console.log(`正在获取API密钥 (ID: ${keyId})...`);
+
+// 尝试使用AWS SDK获取密钥
+async function getApiKeyWithSdk() {
   try {
     const apigateway = new AWS.APIGateway();
-    const response = await apigateway.getApiKey({
-      apiKey: apiKeyId,
-      includeValue: true
-    }).promise();
-    
-    return response;
+    const response = await apigateway.getApiKey({ apiKey: keyId, includeValue: true }).promise();
+    return response.value;
   } catch (error) {
-    console.error('Error getting API key:', error.message);
+    console.error('使用SDK获取API密钥失败:', error.message);
+    return null;
+  }
+}
+
+// 尝试使用AWS CLI获取密钥
+function getApiKeyWithCli() {
+  try {
+    const command = `aws apigateway get-api-key --api-key ${keyId} --include-value --query "value" --output text`;
+    return execSync(command).toString().trim();
+  } catch (error) {
+    console.error('使用CLI获取API密钥失败:', error.message);
+    return null;
+  }
+}
+
+// 主函数
+async function main() {
+  try {
+    let apiKeyValue = await getApiKeyWithSdk();
+    
+    if (!apiKeyValue) {
+      console.log('尝试使用AWS CLI获取API密钥...');
+      apiKeyValue = getApiKeyWithCli();
+    }
+    
+    if (apiKeyValue) {
+      console.log('\n===== API密钥信息 =====');
+      console.log(`API密钥ID: ${keyId}`);
+      console.log(`API密钥值: ${apiKeyValue}`);
+      console.log('\n使用方法:');
+      console.log('在HTTP请求中添加以下标头:');
+      console.log('x-api-key: ' + apiKeyValue);
+    } else {
+      console.error('无法获取API密钥值。请确保您有权限访问此密钥。');
+      process.exit(1);
+    }
+  } catch (error) {
+    console.error('获取API密钥时发生错误:', error);
     process.exit(1);
   }
-};
+}
 
-// Main function
-const main = async () => {
-  console.log('Retrieving API key for User Management API...');
-  
-  // Get API Key ID
-  const apiKeyId = getApiKeyId();
-  console.log(`API Key ID: ${apiKeyId}`);
-  
-  if (!apiKeyId) {
-    console.error('API Key ID not found. Has the stack been deployed?');
-    process.exit(1);
-  }
-  
-  // Get the actual API key value
-  const apiKey = await getApiKey(apiKeyId);
-  
-  console.log('\nAPI Key Information:');
-  console.log(`ID: ${apiKey.id}`);
-  console.log(`Name: ${apiKey.name}`);
-  console.log(`Value: ${apiKey.value}`);
-  console.log(`Created: ${apiKey.createdDate}`);
-  
-  console.log('\nUse the API key in the x-api-key header in your requests to POST and PUT endpoints.');
-  console.log('Example:');
-  console.log(`curl -X POST https://<api-id>.execute-api.${region}.amazonaws.com/prod/items \\\n  -H "Content-Type: application/json" \\\n  -H "x-api-key: ${apiKey.value}" \\\n  -d '{"partition_key": "test", "sort_key": "item1", "description": "Test item"}'`);
-};
-
-// Run main function
-main().catch(error => {
-  console.error('Unexpected error:', error);
-  process.exit(1);
-}); 
+main(); 

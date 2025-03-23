@@ -1,0 +1,256 @@
+{
+ "Description": "用户管理API的Lambda函数和层",
+ "Resources": {
+  "CommonLayer306767A0": {
+   "Type": "AWS::Lambda::LayerVersion",
+   "Properties": {
+    "CompatibleRuntimes": [
+     "nodejs18.x"
+    ],
+    "Content": {
+     "S3Bucket": "cdk-hnb659fds-assets-491085400452-eu-west-1",
+     "S3Key": "cfdc85a2f78e6ea8d254863b629d1f4320d46f6d91937de5d0b2f273a325a7e1.zip"
+    },
+    "Description": "包含通用工具函数的层"
+   },
+   "Metadata": {
+    "aws:cdk:path": "UserManagementLambdaStack/CommonLayer/Resource",
+    "aws:asset:path": "asset.cfdc85a2f78e6ea8d254863b629d1f4320d46f6d91937de5d0b2f273a325a7e1",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Content"
+   }
+  },
+  "ItemLambdaServiceRole6E4F6B4B": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "Production"
+     },
+     {
+      "Key": "Owner",
+      "Value": "APITeam"
+     },
+     {
+      "Key": "Project",
+      "Value": "UserManagementAPI"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "UserManagementLambdaStack/ItemLambda/ServiceRole/Resource"
+   }
+  },
+  "ItemLambdaServiceRoleDefaultPolicy247662AD": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "translate:TranslateText",
+        "translate:ListLanguages"
+       ],
+       "Effect": "Allow",
+       "Resource": "*"
+      },
+      {
+       "Action": [
+        "dynamodb:BatchGetItem",
+        "dynamodb:GetRecords",
+        "dynamodb:GetShardIterator",
+        "dynamodb:Query",
+        "dynamodb:GetItem",
+        "dynamodb:Scan",
+        "dynamodb:ConditionCheckItem",
+        "dynamodb:BatchWriteItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:DescribeTable"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::ImportValue": "UserManagementDatabaseStack:ExportsOutputFnGetAttItemTable276B2AC8ArnAA382970"
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::ImportValue": "UserManagementDatabaseStack:ExportsOutputFnGetAttItemTable276B2AC8ArnAA382970"
+           },
+           "/index/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "ItemLambdaServiceRoleDefaultPolicy247662AD",
+    "Roles": [
+     {
+      "Ref": "ItemLambdaServiceRole6E4F6B4B"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "UserManagementLambdaStack/ItemLambda/ServiceRole/DefaultPolicy/Resource"
+   }
+  },
+  "ItemLambdaB9B2602D": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "S3Bucket": "cdk-hnb659fds-assets-491085400452-eu-west-1",
+     "S3Key": "36e516908e81155d16ead8bfcdc31e3afe4bb7d3af8bdc03d442b66ea4a767f4.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "TABLE_NAME": {
+       "Fn::ImportValue": "UserManagementDatabaseStack:ExportsOutputRefItemTable276B2AC8C17B0804"
+      },
+      "NODE_ENV": "production"
+     }
+    },
+    "Handler": "index.handler",
+    "Layers": [
+     {
+      "Ref": "CommonLayer306767A0"
+     }
+    ],
+    "MemorySize": 256,
+    "Role": {
+     "Fn::GetAtt": [
+      "ItemLambdaServiceRole6E4F6B4B",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs18.x",
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "Production"
+     },
+     {
+      "Key": "Owner",
+      "Value": "APITeam"
+     },
+     {
+      "Key": "Project",
+      "Value": "UserManagementAPI"
+     }
+    ],
+    "Timeout": 30
+   },
+   "DependsOn": [
+    "ItemLambdaServiceRoleDefaultPolicy247662AD",
+    "ItemLambdaServiceRole6E4F6B4B"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "UserManagementLambdaStack/ItemLambda/Resource",
+    "aws:asset:path": "asset.36e516908e81155d16ead8bfcdc31e3afe4bb7d3af8bdc03d442b66ea4a767f4",
+    "aws:asset:is-bundled": false,
+    "aws:asset:property": "Code"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/1WLSwuCQBRGf4v78eYjqG0GrYJCoa1cx5uMj5nwziQi/vdQa9HqnI+PE0F43EPo4cC+LBu/VQVMmUXZCBw4n1rsihJhuuJI/YN6VkaL81P/7YvT0n6Pn8+C4xyZyTKcFgiOIXGyIZsgk1DYwZSalpZo5d20So7L3GyexRpmFiulK5ESG9fLNbg5+3J2FtqUBDXv3lEA4QECr2al/N5pqzqCdOMHJXsmQ+QAAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "UserManagementLambdaStack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "ItemLambdaArn": {
+   "Description": "用户管理API的Lambda函数ARN",
+   "Value": {
+    "Fn::GetAtt": [
+     "ItemLambdaB9B2602D",
+     "Arn"
+    ]
+   },
+   "Export": {
+    "Name": "UserManagementApiItemLambdaArn"
+   }
+  },
+  "ExportsOutputFnGetAttItemLambdaB9B2602DArn5E898866": {
+   "Value": {
+    "Fn::GetAtt": [
+     "ItemLambdaB9B2602D",
+     "Arn"
+    ]
+   },
+   "Export": {
+    "Name": "UserManagementLambdaStack:ExportsOutputFnGetAttItemLambdaB9B2602DArn5E898866"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

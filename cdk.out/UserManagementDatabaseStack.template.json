@@ -1,0 +1,149 @@
+{
+ "Description": "用户管理API的数据库资源，包括DynamoDB表和索引",
+ "Resources": {
+  "ItemTable276B2AC8": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "partition_key",
+      "AttributeType": "S"
+     },
+     {
+      "AttributeName": "sort_key",
+      "AttributeType": "S"
+     },
+     {
+      "AttributeName": "original_text",
+      "AttributeType": "S"
+     },
+     {
+      "AttributeName": "language",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "GlobalSecondaryIndexes": [
+     {
+      "IndexName": "TranslationIndex",
+      "KeySchema": [
+       {
+        "AttributeName": "original_text",
+        "KeyType": "HASH"
+       },
+       {
+        "AttributeName": "language",
+        "KeyType": "RANGE"
+       }
+      ],
+      "Projection": {
+       "ProjectionType": "ALL"
+      }
+     }
+    ],
+    "KeySchema": [
+     {
+      "AttributeName": "partition_key",
+      "KeyType": "HASH"
+     },
+     {
+      "AttributeName": "sort_key",
+      "KeyType": "RANGE"
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "Production"
+     },
+     {
+      "Key": "Owner",
+      "Value": "APITeam"
+     },
+     {
+      "Key": "Project",
+      "Value": "UserManagementAPI"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "UserManagementDatabaseStack/ItemTable/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/yXISw5AMBRA0bWYt4+KhLkFSDCX14+kPq14LRGxdwmje3JzEFUBIsGTuNIzX6yEuwuoZoYnDfpyuHot4e5RLobVo/vwsNaQj7v6VhPDFsPDnNcGJkqPPANRQpZMZC3fowt2NdD+fQFCsve2cgAAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "UserManagementDatabaseStack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "ItemTableName": {
+   "Description": "用户管理API的DynamoDB表名",
+   "Value": {
+    "Ref": "ItemTable276B2AC8"
+   },
+   "Export": {
+    "Name": "UserManagementApiItemTableName"
+   }
+  },
+  "ExportsOutputFnGetAttItemTable276B2AC8ArnAA382970": {
+   "Value": {
+    "Fn::GetAtt": [
+     "ItemTable276B2AC8",
+     "Arn"
+    ]
+   },
+   "Export": {
+    "Name": "UserManagementDatabaseStack:ExportsOutputFnGetAttItemTable276B2AC8ArnAA382970"
+   }
+  },
+  "ExportsOutputRefItemTable276B2AC8C17B0804": {
+   "Value": {
+    "Ref": "ItemTable276B2AC8"
+   },
+   "Export": {
+    "Name": "UserManagementDatabaseStack:ExportsOutputRefItemTable276B2AC8C17B0804"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}

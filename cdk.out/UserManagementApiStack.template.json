@@ -1,283 +1,31 @@
 {
+ "Description": "用户管理API的API网关和路由",
  "Resources": {
-  "UserPool6BA7E5F2": {
-   "Type": "AWS::Cognito::UserPool",
-   "Properties": {
-    "AccountRecoverySetting": {
-     "RecoveryMechanisms": [
-      {
-       "Name": "verified_phone_number",
-       "Priority": 1
-      },
-      {
-       "Name": "verified_email",
-       "Priority": 2
-      }
-     ]
-    },
-    "AdminCreateUserConfig": {
-     "AllowAdminCreateUserOnly": false
-    },
-    "AutoVerifiedAttributes": [
-     "email"
-    ],
-    "EmailVerificationMessage": "The verification code to your new account is {####}",
-    "EmailVerificationSubject": "Verify your new account",
-    "Schema": [
-     {
-      "Mutable": true,
-      "Name": "email",
-      "Required": true
-     }
-    ],
-    "SmsVerificationMessage": "The verification code to your new account is {####}",
-    "UserPoolName": "UserManagementPool",
-    "UsernameAttributes": [
-     "email"
-    ],
-    "VerificationMessageTemplate": {
-     "DefaultEmailOption": "CONFIRM_WITH_CODE",
-     "EmailMessage": "The verification code to your new account is {####}",
-     "EmailSubject": "Verify your new account",
-     "SmsMessage": "The verification code to your new account is {####}"
-    }
-   },
-   "UpdateReplacePolicy": "Retain",
-   "DeletionPolicy": "Retain",
-   "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserPool/Resource"
-   }
-  },
-  "UserPoolClient2F5918F7": {
-   "Type": "AWS::Cognito::UserPoolClient",
-   "Properties": {
-    "AllowedOAuthFlows": [
-     "implicit",
-     "code"
-    ],
-    "AllowedOAuthFlowsUserPoolClient": true,
-    "AllowedOAuthScopes": [
-     "profile",
-     "phone",
-     "email",
-     "openid",
-     "aws.cognito.signin.user.admin"
-    ],
-    "CallbackURLs": [
-     "https://example.com"
-    ],
-    "GenerateSecret": false,
-    "SupportedIdentityProviders": [
-     "COGNITO"
-    ],
-    "UserPoolId": {
-     "Ref": "UserPool6BA7E5F2"
-    }
-   },
-   "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserPoolClient/Resource"
-   }
-  },
-  "ItemTable276B2AC8": {
-   "Type": "AWS::DynamoDB::Table",
-   "Properties": {
-    "AttributeDefinitions": [
-     {
-      "AttributeName": "partition_key",
-      "AttributeType": "S"
-     },
-     {
-      "AttributeName": "sort_key",
-      "AttributeType": "S"
-     },
-     {
-      "AttributeName": "original_text",
-      "AttributeType": "S"
-     },
-     {
-      "AttributeName": "language",
-      "AttributeType": "S"
-     }
-    ],
-    "BillingMode": "PAY_PER_REQUEST",
-    "GlobalSecondaryIndexes": [
-     {
-      "IndexName": "TranslationIndex",
-      "KeySchema": [
-       {
-        "AttributeName": "original_text",
-        "KeyType": "HASH"
-       },
-       {
-        "AttributeName": "language",
-        "KeyType": "RANGE"
-       }
-      ],
-      "Projection": {
-       "ProjectionType": "ALL"
-      }
-     }
-    ],
-    "KeySchema": [
-     {
-      "AttributeName": "partition_key",
-      "KeyType": "HASH"
-     },
-     {
-      "AttributeName": "sort_key",
-      "KeyType": "RANGE"
-     }
-    ]
-   },
-   "UpdateReplacePolicy": "Delete",
-   "DeletionPolicy": "Delete",
-   "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/ItemTable/Resource"
-   }
-  },
-  "ItemLambdaServiceRole6E4F6B4B": {
-   "Type": "AWS::IAM::Role",
-   "Properties": {
-    "AssumeRolePolicyDocument": {
-     "Statement": [
-      {
-       "Action": "sts:AssumeRole",
-       "Effect": "Allow",
-       "Principal": {
-        "Service": "lambda.amazonaws.com"
-       }
-      }
-     ],
-     "Version": "2012-10-17"
-    },
-    "ManagedPolicyArns": [
-     {
-      "Fn::Join": [
-       "",
-       [
-        "arn:",
-        {
-         "Ref": "AWS::Partition"
-        },
-        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-       ]
-      ]
-     }
-    ]
-   },
-   "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/ItemLambda/ServiceRole/Resource"
-   }
-  },
-  "ItemLambdaServiceRoleDefaultPolicy247662AD": {
-   "Type": "AWS::IAM::Policy",
-   "Properties": {
-    "PolicyDocument": {
-     "Statement": [
-      {
-       "Action": "translate:TranslateText",
-       "Effect": "Allow",
-       "Resource": "*"
-      },
-      {
-       "Action": [
-        "dynamodb:BatchGetItem",
-        "dynamodb:GetRecords",
-        "dynamodb:GetShardIterator",
-        "dynamodb:Query",
-        "dynamodb:GetItem",
-        "dynamodb:Scan",
-        "dynamodb:ConditionCheckItem",
-        "dynamodb:BatchWriteItem",
-        "dynamodb:PutItem",
-        "dynamodb:UpdateItem",
-        "dynamodb:DeleteItem",
-        "dynamodb:DescribeTable"
-       ],
-       "Effect": "Allow",
-       "Resource": [
-        {
-         "Fn::GetAtt": [
-          "ItemTable276B2AC8",
-          "Arn"
-         ]
-        },
-        {
-         "Fn::Join": [
-          "",
-          [
-           {
-            "Fn::GetAtt": [
-             "ItemTable276B2AC8",
-             "Arn"
-            ]
-           },
-           "/index/*"
-          ]
-         ]
-        }
-       ]
-      }
-     ],
-     "Version": "2012-10-17"
-    },
-    "PolicyName": "ItemLambdaServiceRoleDefaultPolicy247662AD",
-    "Roles": [
-     {
-      "Ref": "ItemLambdaServiceRole6E4F6B4B"
-     }
-    ]
-   },
-   "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/ItemLambda/ServiceRole/DefaultPolicy/Resource"
-   }
-  },
-  "ItemLambdaB9B2602D": {
-   "Type": "AWS::Lambda::Function",
-   "Properties": {
-    "Code": {
-     "S3Bucket": {
-      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
-     },
-     "S3Key": "848e8fc7fafd8bc38415af0deb7f86d875f33306ba3de22d571e92c696210b99.zip"
-    },
-    "Environment": {
-     "Variables": {
-      "TABLE_NAME": {
-       "Ref": "ItemTable276B2AC8"
-      }
-     }
-    },
-    "Handler": "index.handler",
-    "Role": {
-     "Fn::GetAtt": [
-      "ItemLambdaServiceRole6E4F6B4B",
-      "Arn"
-     ]
-    },
-    "Runtime": "nodejs18.x"
-   },
-   "DependsOn": [
-    "ItemLambdaServiceRoleDefaultPolicy247662AD",
-    "ItemLambdaServiceRole6E4F6B4B"
-   ],
-   "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/ItemLambda/Resource",
-    "aws:asset:path": "asset.848e8fc7fafd8bc38415af0deb7f86d875f33306ba3de22d571e92c696210b99",
-    "aws:asset:is-bundled": false,
-    "aws:asset:property": "Code"
-   }
-  },
-  "UserApiB6C12381": {
+  "UserApiE9AB1AD9": {
    "Type": "AWS::ApiGateway::RestApi",
    "Properties": {
-    "Name": "UserApi"
+    "Description": "用于管理用户数据的RESTful API",
+    "Name": "用户管理API",
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "Production"
+     },
+     {
+      "Key": "Owner",
+      "Value": "APITeam"
+     },
+     {
+      "Key": "Project",
+      "Value": "UserManagementAPI"
+     }
+    ]
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Resource"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Resource"
    }
   },
-  "UserApiCloudWatchRoleCD3B20A5": {
+  "UserApiCloudWatchRoleBF1E2D58": {
    "Type": "AWS::IAM::Role",
    "Properties": {
     "AssumeRolePolicyDocument": {
@@ -305,79 +53,121 @@
        ]
       ]
      }
+    ],
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "Production"
+     },
+     {
+      "Key": "Owner",
+      "Value": "APITeam"
+     },
+     {
+      "Key": "Project",
+      "Value": "UserManagementAPI"
+     }
     ]
    },
    "UpdateReplacePolicy": "Retain",
    "DeletionPolicy": "Retain",
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/CloudWatchRole/Resource"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/CloudWatchRole/Resource"
    }
   },
-  "UserApiAccount52C5A50A": {
+  "UserApiAccountB16E3355": {
    "Type": "AWS::ApiGateway::Account",
    "Properties": {
     "CloudWatchRoleArn": {
      "Fn::GetAtt": [
-      "UserApiCloudWatchRoleCD3B20A5",
+      "UserApiCloudWatchRoleBF1E2D58",
       "Arn"
      ]
     }
    },
    "DependsOn": [
-    "UserApiB6C12381"
+    "UserApiE9AB1AD9"
    ],
    "UpdateReplacePolicy": "Retain",
    "DeletionPolicy": "Retain",
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Account"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Account"
    }
   },
-  "UserApiDeployment248398115a6083ec1c34978478c603fd4aa92c94": {
+  "UserApiDeploymentD98FEBE0875bef3f5084828871808521de02e8b2": {
    "Type": "AWS::ApiGateway::Deployment",
    "Properties": {
-    "Description": "Automatically created by the RestApi construct",
+    "Description": "用于管理用户数据的RESTful API",
     "RestApiId": {
-     "Ref": "UserApiB6C12381"
+     "Ref": "UserApiE9AB1AD9"
     }
    },
    "DependsOn": [
-    "UserApiitemspartitionkeysortkeyOPTIONS8AEAA822",
-    "UserApiitemspartitionkeysortkeyPUTC28D9A7B",
-    "UserApiitemspartitionkeysortkey10C9562A",
-    "UserApiitemspartitionkeysortkeytranslationGETF59387AF",
-    "UserApiitemspartitionkeysortkeytranslationOPTIONS2AE6193E",
-    "UserApiitemspartitionkeysortkeytranslationDF10B0BD",
-    "UserApiitemspartitionkeyGETE60153E4",
-    "UserApiitemspartitionkeyOPTIONS131661C2",
-    "UserApiitemspartitionkey385B7628",
-    "UserApiitemsOPTIONS932920D6",
-    "UserApiitemsPOST3F95B2C3",
-    "UserApiitems2EE043FC",
-    "UserApiOPTIONSC7FF09BC"
+    "UserApiitemspartitionkeysortkeyDELETE2DC1D0E8",
+    "UserApiitemspartitionkeysortkeyGET3F9BA4F3",
+    "UserApiitemspartitionkeysortkeyOPTIONSDC3E02CB",
+    "UserApiitemspartitionkeysortkeyPUT373CE206",
+    "UserApiitemspartitionkeysortkeyE44B5401",
+    "UserApiitemspartitionkeysortkeytranslationGET5B16B1D5",
+    "UserApiitemspartitionkeysortkeytranslationOPTIONS57B219F9",
+    "UserApiitemspartitionkeysortkeytranslation614F0AC6",
+    "UserApiitemspartitionkeyGET4DED2085",
+    "UserApiitemspartitionkeyOPTIONS85886217",
+    "UserApiitemspartitionkey270C501D",
+    "UserApiitemsOPTIONS804F4F5E",
+    "UserApiitemsPOSTE56E44AD",
+    "UserApiitemsFC5EDBC3",
+    "UserApilanguagesGET38723BB1",
+    "UserApilanguagesOPTIONSF0720BF4",
+    "UserApilanguages61F80CA7",
+    "UserApiOPTIONS44FE0779"
    ],
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Deployment/Resource"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Deployment/Resource"
    }
   },
-  "UserApiDeploymentStageprod08A07725": {
+  "UserApiDeploymentStageprod97BF71A2": {
    "Type": "AWS::ApiGateway::Stage",
    "Properties": {
     "DeploymentId": {
-     "Ref": "UserApiDeployment248398115a6083ec1c34978478c603fd4aa92c94"
+     "Ref": "UserApiDeploymentD98FEBE0875bef3f5084828871808521de02e8b2"
     },
+    "MethodSettings": [
+     {
+      "DataTraceEnabled": true,
+      "HttpMethod": "*",
+      "LoggingLevel": "INFO",
+      "MetricsEnabled": true,
+      "ResourcePath": "/*"
+     }
+    ],
     "RestApiId": {
-     "Ref": "UserApiB6C12381"
+     "Ref": "UserApiE9AB1AD9"
     },
-    "StageName": "prod"
+    "StageName": "prod",
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "Production"
+     },
+     {
+      "Key": "Owner",
+      "Value": "APITeam"
+     },
+     {
+      "Key": "Project",
+      "Value": "UserManagementAPI"
+     }
+    ]
    },
    "DependsOn": [
-    "UserApiAccount52C5A50A"
+    "UserApiAccountB16E3355"
    ],
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/DeploymentStage.prod/Resource"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/DeploymentStage.prod/Resource"
    }
   },
-  "UserApiOPTIONSC7FF09BC": {
+  "UserApiOPTIONS44FE0779": {
    "Type": "AWS::ApiGateway::Method",
    "Properties": {
     "ApiKeyRequired": false,
@@ -387,9 +177,10 @@
      "IntegrationResponses": [
       {
        "ResponseParameters": {
-        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'",
         "method.response.header.Access-Control-Allow-Origin": "'*'",
-        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'",
+        "method.response.header.Access-Control-Max-Age": "'86400'"
        },
        "StatusCode": "204"
       }
@@ -404,44 +195,45 @@
       "ResponseParameters": {
        "method.response.header.Access-Control-Allow-Headers": true,
        "method.response.header.Access-Control-Allow-Origin": true,
-       "method.response.header.Access-Control-Allow-Methods": true
+       "method.response.header.Access-Control-Allow-Methods": true,
+       "method.response.header.Access-Control-Max-Age": true
       },
       "StatusCode": "204"
      }
     ],
     "ResourceId": {
      "Fn::GetAtt": [
-      "UserApiB6C12381",
+      "UserApiE9AB1AD9",
       "RootResourceId"
      ]
     },
     "RestApiId": {
-     "Ref": "UserApiB6C12381"
+     "Ref": "UserApiE9AB1AD9"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Default/OPTIONS/Resource"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/OPTIONS/Resource"
    }
   },
-  "UserApiitems2EE043FC": {
+  "UserApiitemsFC5EDBC3": {
    "Type": "AWS::ApiGateway::Resource",
    "Properties": {
     "ParentId": {
      "Fn::GetAtt": [
-      "UserApiB6C12381",
+      "UserApiE9AB1AD9",
       "RootResourceId"
      ]
     },
     "PathPart": "items",
     "RestApiId": {
-     "Ref": "UserApiB6C12381"
+     "Ref": "UserApiE9AB1AD9"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Default/items/Resource"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/Resource"
    }
   },
-  "UserApiitemsOPTIONS932920D6": {
+  "UserApiitemsOPTIONS804F4F5E": {
    "Type": "AWS::ApiGateway::Method",
    "Properties": {
     "ApiKeyRequired": false,
@@ -451,9 +243,10 @@
      "IntegrationResponses": [
       {
        "ResponseParameters": {
-        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'",
         "method.response.header.Access-Control-Allow-Origin": "'*'",
-        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'",
+        "method.response.header.Access-Control-Max-Age": "'86400'"
        },
        "StatusCode": "204"
       }
@@ -468,31 +261,29 @@
       "ResponseParameters": {
        "method.response.header.Access-Control-Allow-Headers": true,
        "method.response.header.Access-Control-Allow-Origin": true,
-       "method.response.header.Access-Control-Allow-Methods": true
+       "method.response.header.Access-Control-Allow-Methods": true,
+       "method.response.header.Access-Control-Max-Age": true
       },
       "StatusCode": "204"
      }
     ],
     "ResourceId": {
-     "Ref": "UserApiitems2EE043FC"
+     "Ref": "UserApiitemsFC5EDBC3"
     },
     "RestApiId": {
-     "Ref": "UserApiB6C12381"
+     "Ref": "UserApiE9AB1AD9"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Default/items/OPTIONS/Resource"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/OPTIONS/Resource"
    }
   },
-  "UserApiitemsPOSTApiPermissionUserManagementApiStackUserApiD537B602POSTitems0ECED01D": {
+  "UserApiitemsPOSTApiPermissionUserManagementApiStackUserApiB58EFCBAPOSTitems985036D2": {
    "Type": "AWS::Lambda::Permission",
    "Properties": {
     "Action": "lambda:InvokeFunction",
     "FunctionName": {
-     "Fn::GetAtt": [
-      "ItemLambdaB9B2602D",
-      "Arn"
-     ]
+     "Fn::ImportValue": "UserManagementLambdaStack:ExportsOutputFnGetAttItemLambdaB9B2602DArn5E898866"
     },
     "Principal": "apigateway.amazonaws.com",
     "SourceArn": {
@@ -503,21 +294,13 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:",
+       ":execute-api:eu-west-1:491085400452:",
        {
-        "Ref": "AWS::Region"
-       },
-       ":",
-       {
-        "Ref": "AWS::AccountId"
-       },
-       ":",
-       {
-        "Ref": "UserApiB6C12381"
+        "Ref": "UserApiE9AB1AD9"
        },
        "/",
        {
-        "Ref": "UserApiDeploymentStageprod08A07725"
+        "Ref": "UserApiDeploymentStageprod97BF71A2"
        },
        "/POST/items"
       ]
@@ -525,18 +308,15 @@
     }
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Default/items/POST/ApiPermission.UserManagementApiStackUserApiD537B602.POST..items"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/POST/ApiPermission.UserManagementApiStackUserApiB58EFCBA.POST..items"
    }
   },
-  "UserApiitemsPOSTApiPermissionTestUserManagementApiStackUserApiD537B602POSTitems93DCB34A": {
+  "UserApiitemsPOSTApiPermissionTestUserManagementApiStackUserApiB58EFCBAPOSTitemsD6C83036": {
    "Type": "AWS::Lambda::Permission",
    "Properties": {
     "Action": "lambda:InvokeFunction",
     "FunctionName": {
-     "Fn::GetAtt": [
-      "ItemLambdaB9B2602D",
-      "Arn"
-     ]
+     "Fn::ImportValue": "UserManagementLambdaStack:ExportsOutputFnGetAttItemLambdaB9B2602DArn5E898866"
     },
     "Principal": "apigateway.amazonaws.com",
     "SourceArn": {
@@ -547,17 +327,9 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:",
+       ":execute-api:eu-west-1:491085400452:",
        {
-        "Ref": "AWS::Region"
-       },
-       ":",
-       {
-        "Ref": "AWS::AccountId"
-       },
-       ":",
-       {
-        "Ref": "UserApiB6C12381"
+        "Ref": "UserApiE9AB1AD9"
        },
        "/test-invoke-stage/POST/items"
       ]
@@ -565,10 +337,10 @@
     }
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Default/items/POST/ApiPermission.Test.UserManagementApiStackUserApiD537B602.POST..items"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/POST/ApiPermission.Test.UserManagementApiStackUserApiB58EFCBA.POST..items"
    }
   },
-  "UserApiitemsPOST3F95B2C3": {
+  "UserApiitemsPOSTE56E44AD": {
    "Type": "AWS::ApiGateway::Method",
    "Properties": {
     "ApiKeyRequired": true,
@@ -585,16 +357,9 @@
         {
          "Ref": "AWS::Partition"
         },
-        ":apigateway:",
+        ":apigateway:eu-west-1:lambda:path/2015-03-31/functions/",
         {
-         "Ref": "AWS::Region"
-        },
-        ":lambda:path/2015-03-31/functions/",
-        {
-         "Fn::GetAtt": [
-          "ItemLambdaB9B2602D",
-          "Arn"
-         ]
+         "Fn::ImportValue": "UserManagementLambdaStack:ExportsOutputFnGetAttItemLambdaB9B2602DArn5E898866"
         },
         "/invocations"
        ]
@@ -602,32 +367,32 @@
      }
     },
     "ResourceId": {
-     "Ref": "UserApiitems2EE043FC"
+     "Ref": "UserApiitemsFC5EDBC3"
     },
     "RestApiId": {
-     "Ref": "UserApiB6C12381"
+     "Ref": "UserApiE9AB1AD9"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Default/items/POST/Resource"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/POST/Resource"
    }
   },
-  "UserApiitemspartitionkey385B7628": {
+  "UserApiitemspartitionkey270C501D": {
    "Type": "AWS::ApiGateway::Resource",
    "Properties": {
     "ParentId": {
-     "Ref": "UserApiitems2EE043FC"
+     "Ref": "UserApiitemsFC5EDBC3"
     },
     "PathPart": "{partition_key}",
     "RestApiId": {
-     "Ref": "UserApiB6C12381"
+     "Ref": "UserApiE9AB1AD9"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Default/items/{partition_key}/Resource"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/{partition_key}/Resource"
    }
   },
-  "UserApiitemspartitionkeyOPTIONS131661C2": {
+  "UserApiitemspartitionkeyOPTIONS85886217": {
    "Type": "AWS::ApiGateway::Method",
    "Properties": {
     "ApiKeyRequired": false,
@@ -637,9 +402,10 @@
      "IntegrationResponses": [
       {
        "ResponseParameters": {
-        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'",
         "method.response.header.Access-Control-Allow-Origin": "'*'",
-        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'",
+        "method.response.header.Access-Control-Max-Age": "'86400'"
        },
        "StatusCode": "204"
       }
@@ -654,31 +420,29 @@
       "ResponseParameters": {
        "method.response.header.Access-Control-Allow-Headers": true,
        "method.response.header.Access-Control-Allow-Origin": true,
-       "method.response.header.Access-Control-Allow-Methods": true
+       "method.response.header.Access-Control-Allow-Methods": true,
+       "method.response.header.Access-Control-Max-Age": true
       },
       "StatusCode": "204"
      }
     ],
     "ResourceId": {
-     "Ref": "UserApiitemspartitionkey385B7628"
+     "Ref": "UserApiitemspartitionkey270C501D"
     },
     "RestApiId": {
-     "Ref": "UserApiB6C12381"
+     "Ref": "UserApiE9AB1AD9"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Default/items/{partition_key}/OPTIONS/Resource"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/{partition_key}/OPTIONS/Resource"
    }
   },
-  "UserApiitemspartitionkeyGETApiPermissionUserManagementApiStackUserApiD537B602GETitemspartitionkeyF99C6377": {
+  "UserApiitemspartitionkeyGETApiPermissionUserManagementApiStackUserApiB58EFCBAGETitemspartitionkey0B23FDBA": {
    "Type": "AWS::Lambda::Permission",
    "Properties": {
     "Action": "lambda:InvokeFunction",
     "FunctionName": {
-     "Fn::GetAtt": [
-      "ItemLambdaB9B2602D",
-      "Arn"
-     ]
+     "Fn::ImportValue": "UserManagementLambdaStack:ExportsOutputFnGetAttItemLambdaB9B2602DArn5E898866"
     },
     "Principal": "apigateway.amazonaws.com",
     "SourceArn": {
@@ -689,21 +453,13 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:",
+       ":execute-api:eu-west-1:491085400452:",
        {
-        "Ref": "AWS::Region"
-       },
-       ":",
-       {
-        "Ref": "AWS::AccountId"
-       },
-       ":",
-       {
-        "Ref": "UserApiB6C12381"
+        "Ref": "UserApiE9AB1AD9"
        },
        "/",
        {
-        "Ref": "UserApiDeploymentStageprod08A07725"
+        "Ref": "UserApiDeploymentStageprod97BF71A2"
        },
        "/GET/items/*"
       ]
@@ -711,18 +467,15 @@
     }
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Default/items/{partition_key}/GET/ApiPermission.UserManagementApiStackUserApiD537B602.GET..items.{partition_key}"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/{partition_key}/GET/ApiPermission.UserManagementApiStackUserApiB58EFCBA.GET..items.{partition_key}"
    }
   },
-  "UserApiitemspartitionkeyGETApiPermissionTestUserManagementApiStackUserApiD537B602GETitemspartitionkey7111635A": {
+  "UserApiitemspartitionkeyGETApiPermissionTestUserManagementApiStackUserApiB58EFCBAGETitemspartitionkey905817EC": {
    "Type": "AWS::Lambda::Permission",
    "Properties": {
     "Action": "lambda:InvokeFunction",
     "FunctionName": {
-     "Fn::GetAtt": [
-      "ItemLambdaB9B2602D",
-      "Arn"
-     ]
+     "Fn::ImportValue": "UserManagementLambdaStack:ExportsOutputFnGetAttItemLambdaB9B2602DArn5E898866"
     },
     "Principal": "apigateway.amazonaws.com",
     "SourceArn": {
@@ -733,17 +486,9 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:",
+       ":execute-api:eu-west-1:491085400452:",
        {
-        "Ref": "AWS::Region"
-       },
-       ":",
-       {
-        "Ref": "AWS::AccountId"
-       },
-       ":",
-       {
-        "Ref": "UserApiB6C12381"
+        "Ref": "UserApiE9AB1AD9"
        },
        "/test-invoke-stage/GET/items/*"
       ]
@@ -751,10 +496,10 @@
     }
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Default/items/{partition_key}/GET/ApiPermission.Test.UserManagementApiStackUserApiD537B602.GET..items.{partition_key}"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/{partition_key}/GET/ApiPermission.Test.UserManagementApiStackUserApiB58EFCBA.GET..items.{partition_key}"
    }
   },
-  "UserApiitemspartitionkeyGETE60153E4": {
+  "UserApiitemspartitionkeyGET4DED2085": {
    "Type": "AWS::ApiGateway::Method",
    "Properties": {
     "AuthorizationType": "NONE",
@@ -770,16 +515,9 @@
         {
          "Ref": "AWS::Partition"
         },
-        ":apigateway:",
+        ":apigateway:eu-west-1:lambda:path/2015-03-31/functions/",
         {
-         "Ref": "AWS::Region"
-        },
-        ":lambda:path/2015-03-31/functions/",
-        {
-         "Fn::GetAtt": [
-          "ItemLambdaB9B2602D",
-          "Arn"
-         ]
+         "Fn::ImportValue": "UserManagementLambdaStack:ExportsOutputFnGetAttItemLambdaB9B2602DArn5E898866"
         },
         "/invocations"
        ]
@@ -790,32 +528,32 @@
      "method.request.querystring.filter": false
     },
     "ResourceId": {
-     "Ref": "UserApiitemspartitionkey385B7628"
+     "Ref": "UserApiitemspartitionkey270C501D"
     },
     "RestApiId": {
-     "Ref": "UserApiB6C12381"
+     "Ref": "UserApiE9AB1AD9"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Default/items/{partition_key}/GET/Resource"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/{partition_key}/GET/Resource"
    }
   },
-  "UserApiitemspartitionkeysortkey10C9562A": {
+  "UserApiitemspartitionkeysortkeyE44B5401": {
    "Type": "AWS::ApiGateway::Resource",
    "Properties": {
     "ParentId": {
-     "Ref": "UserApiitemspartitionkey385B7628"
+     "Ref": "UserApiitemspartitionkey270C501D"
     },
     "PathPart": "{sort_key}",
     "RestApiId": {
-     "Ref": "UserApiB6C12381"
+     "Ref": "UserApiE9AB1AD9"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/Resource"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/{partition_key}/{sort_key}/Resource"
    }
   },
-  "UserApiitemspartitionkeysortkeyOPTIONS8AEAA822": {
+  "UserApiitemspartitionkeysortkeyOPTIONSDC3E02CB": {
    "Type": "AWS::ApiGateway::Method",
    "Properties": {
     "ApiKeyRequired": false,
@@ -825,9 +563,10 @@
      "IntegrationResponses": [
       {
        "ResponseParameters": {
-        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'",
         "method.response.header.Access-Control-Allow-Origin": "'*'",
-        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'",
+        "method.response.header.Access-Control-Max-Age": "'86400'"
        },
        "StatusCode": "204"
       }
@@ -842,31 +581,29 @@
       "ResponseParameters": {
        "method.response.header.Access-Control-Allow-Headers": true,
        "method.response.header.Access-Control-Allow-Origin": true,
-       "method.response.header.Access-Control-Allow-Methods": true
+       "method.response.header.Access-Control-Allow-Methods": true,
+       "method.response.header.Access-Control-Max-Age": true
       },
       "StatusCode": "204"
      }
     ],
     "ResourceId": {
-     "Ref": "UserApiitemspartitionkeysortkey10C9562A"
+     "Ref": "UserApiitemspartitionkeysortkeyE44B5401"
     },
     "RestApiId": {
-     "Ref": "UserApiB6C12381"
+     "Ref": "UserApiE9AB1AD9"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/OPTIONS/Resource"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/{partition_key}/{sort_key}/OPTIONS/Resource"
    }
   },
-  "UserApiitemspartitionkeysortkeyPUTApiPermissionUserManagementApiStackUserApiD537B602PUTitemspartitionkeysortkeyB09A56C6": {
+  "UserApiitemspartitionkeysortkeyGETApiPermissionUserManagementApiStackUserApiB58EFCBAGETitemspartitionkeysortkeyEB2DD51A": {
    "Type": "AWS::Lambda::Permission",
    "Properties": {
     "Action": "lambda:InvokeFunction",
     "FunctionName": {
-     "Fn::GetAtt": [
-      "ItemLambdaB9B2602D",
-      "Arn"
-     ]
+     "Fn::ImportValue": "UserManagementLambdaStack:ExportsOutputFnGetAttItemLambdaB9B2602DArn5E898866"
     },
     "Principal": "apigateway.amazonaws.com",
     "SourceArn": {
@@ -877,21 +614,111 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:",
+       ":execute-api:eu-west-1:491085400452:",
        {
-        "Ref": "AWS::Region"
-       },
-       ":",
-       {
-        "Ref": "AWS::AccountId"
-       },
-       ":",
-       {
-        "Ref": "UserApiB6C12381"
+        "Ref": "UserApiE9AB1AD9"
        },
        "/",
        {
-        "Ref": "UserApiDeploymentStageprod08A07725"
+        "Ref": "UserApiDeploymentStageprod97BF71A2"
+       },
+       "/GET/items/*/*"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/{partition_key}/{sort_key}/GET/ApiPermission.UserManagementApiStackUserApiB58EFCBA.GET..items.{partition_key}.{sort_key}"
+   }
+  },
+  "UserApiitemspartitionkeysortkeyGETApiPermissionTestUserManagementApiStackUserApiB58EFCBAGETitemspartitionkeysortkey4261E26F": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::ImportValue": "UserManagementLambdaStack:ExportsOutputFnGetAttItemLambdaB9B2602DArn5E898866"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:eu-west-1:491085400452:",
+       {
+        "Ref": "UserApiE9AB1AD9"
+       },
+       "/test-invoke-stage/GET/items/*/*"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/{partition_key}/{sort_key}/GET/ApiPermission.Test.UserManagementApiStackUserApiB58EFCBA.GET..items.{partition_key}.{sort_key}"
+   }
+  },
+  "UserApiitemspartitionkeysortkeyGET3F9BA4F3": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:eu-west-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::ImportValue": "UserManagementLambdaStack:ExportsOutputFnGetAttItemLambdaB9B2602DArn5E898866"
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "UserApiitemspartitionkeysortkeyE44B5401"
+    },
+    "RestApiId": {
+     "Ref": "UserApiE9AB1AD9"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/{partition_key}/{sort_key}/GET/Resource"
+   }
+  },
+  "UserApiitemspartitionkeysortkeyPUTApiPermissionUserManagementApiStackUserApiB58EFCBAPUTitemspartitionkeysortkey1CE35094": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::ImportValue": "UserManagementLambdaStack:ExportsOutputFnGetAttItemLambdaB9B2602DArn5E898866"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:eu-west-1:491085400452:",
+       {
+        "Ref": "UserApiE9AB1AD9"
+       },
+       "/",
+       {
+        "Ref": "UserApiDeploymentStageprod97BF71A2"
        },
        "/PUT/items/*/*"
       ]
@@ -899,18 +726,15 @@
     }
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/PUT/ApiPermission.UserManagementApiStackUserApiD537B602.PUT..items.{partition_key}.{sort_key}"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/{partition_key}/{sort_key}/PUT/ApiPermission.UserManagementApiStackUserApiB58EFCBA.PUT..items.{partition_key}.{sort_key}"
    }
   },
-  "UserApiitemspartitionkeysortkeyPUTApiPermissionTestUserManagementApiStackUserApiD537B602PUTitemspartitionkeysortkeyFFE35B09": {
+  "UserApiitemspartitionkeysortkeyPUTApiPermissionTestUserManagementApiStackUserApiB58EFCBAPUTitemspartitionkeysortkey1656C532": {
    "Type": "AWS::Lambda::Permission",
    "Properties": {
     "Action": "lambda:InvokeFunction",
     "FunctionName": {
-     "Fn::GetAtt": [
-      "ItemLambdaB9B2602D",
-      "Arn"
-     ]
+     "Fn::ImportValue": "UserManagementLambdaStack:ExportsOutputFnGetAttItemLambdaB9B2602DArn5E898866"
     },
     "Principal": "apigateway.amazonaws.com",
     "SourceArn": {
@@ -921,17 +745,9 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:",
+       ":execute-api:eu-west-1:491085400452:",
        {
-        "Ref": "AWS::Region"
-       },
-       ":",
-       {
-        "Ref": "AWS::AccountId"
-       },
-       ":",
-       {
-        "Ref": "UserApiB6C12381"
+        "Ref": "UserApiE9AB1AD9"
        },
        "/test-invoke-stage/PUT/items/*/*"
       ]
@@ -939,10 +755,10 @@
     }
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/PUT/ApiPermission.Test.UserManagementApiStackUserApiD537B602.PUT..items.{partition_key}.{sort_key}"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/{partition_key}/{sort_key}/PUT/ApiPermission.Test.UserManagementApiStackUserApiB58EFCBA.PUT..items.{partition_key}.{sort_key}"
    }
   },
-  "UserApiitemspartitionkeysortkeyPUTC28D9A7B": {
+  "UserApiitemspartitionkeysortkeyPUT373CE206": {
    "Type": "AWS::ApiGateway::Method",
    "Properties": {
     "ApiKeyRequired": true,
@@ -959,16 +775,9 @@
         {
          "Ref": "AWS::Partition"
         },
-        ":apigateway:",
+        ":apigateway:eu-west-1:lambda:path/2015-03-31/functions/",
         {
-         "Ref": "AWS::Region"
-        },
-        ":lambda:path/2015-03-31/functions/",
-        {
-         "Fn::GetAtt": [
-          "ItemLambdaB9B2602D",
-          "Arn"
-         ]
+         "Fn::ImportValue": "UserManagementLambdaStack:ExportsOutputFnGetAttItemLambdaB9B2602DArn5E898866"
         },
         "/invocations"
        ]
@@ -976,32 +785,131 @@
      }
     },
     "ResourceId": {
-     "Ref": "UserApiitemspartitionkeysortkey10C9562A"
+     "Ref": "UserApiitemspartitionkeysortkeyE44B5401"
     },
     "RestApiId": {
-     "Ref": "UserApiB6C12381"
+     "Ref": "UserApiE9AB1AD9"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/PUT/Resource"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/{partition_key}/{sort_key}/PUT/Resource"
    }
   },
-  "UserApiitemspartitionkeysortkeytranslationDF10B0BD": {
+  "UserApiitemspartitionkeysortkeyDELETEApiPermissionUserManagementApiStackUserApiB58EFCBADELETEitemspartitionkeysortkeyF7730102": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::ImportValue": "UserManagementLambdaStack:ExportsOutputFnGetAttItemLambdaB9B2602DArn5E898866"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:eu-west-1:491085400452:",
+       {
+        "Ref": "UserApiE9AB1AD9"
+       },
+       "/",
+       {
+        "Ref": "UserApiDeploymentStageprod97BF71A2"
+       },
+       "/DELETE/items/*/*"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/{partition_key}/{sort_key}/DELETE/ApiPermission.UserManagementApiStackUserApiB58EFCBA.DELETE..items.{partition_key}.{sort_key}"
+   }
+  },
+  "UserApiitemspartitionkeysortkeyDELETEApiPermissionTestUserManagementApiStackUserApiB58EFCBADELETEitemspartitionkeysortkey81135133": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::ImportValue": "UserManagementLambdaStack:ExportsOutputFnGetAttItemLambdaB9B2602DArn5E898866"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:eu-west-1:491085400452:",
+       {
+        "Ref": "UserApiE9AB1AD9"
+       },
+       "/test-invoke-stage/DELETE/items/*/*"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/{partition_key}/{sort_key}/DELETE/ApiPermission.Test.UserManagementApiStackUserApiB58EFCBA.DELETE..items.{partition_key}.{sort_key}"
+   }
+  },
+  "UserApiitemspartitionkeysortkeyDELETE2DC1D0E8": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": true,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "DELETE",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:eu-west-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::ImportValue": "UserManagementLambdaStack:ExportsOutputFnGetAttItemLambdaB9B2602DArn5E898866"
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "UserApiitemspartitionkeysortkeyE44B5401"
+    },
+    "RestApiId": {
+     "Ref": "UserApiE9AB1AD9"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/{partition_key}/{sort_key}/DELETE/Resource"
+   }
+  },
+  "UserApiitemspartitionkeysortkeytranslation614F0AC6": {
    "Type": "AWS::ApiGateway::Resource",
    "Properties": {
     "ParentId": {
-     "Ref": "UserApiitemspartitionkeysortkey10C9562A"
+     "Ref": "UserApiitemspartitionkeysortkeyE44B5401"
     },
     "PathPart": "translation",
     "RestApiId": {
-     "Ref": "UserApiB6C12381"
+     "Ref": "UserApiE9AB1AD9"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/translation/Resource"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/{partition_key}/{sort_key}/translation/Resource"
    }
   },
-  "UserApiitemspartitionkeysortkeytranslationOPTIONS2AE6193E": {
+  "UserApiitemspartitionkeysortkeytranslationOPTIONS57B219F9": {
    "Type": "AWS::ApiGateway::Method",
    "Properties": {
     "ApiKeyRequired": false,
@@ -1011,9 +919,10 @@
      "IntegrationResponses": [
       {
        "ResponseParameters": {
-        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent'",
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'",
         "method.response.header.Access-Control-Allow-Origin": "'*'",
-        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'"
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'",
+        "method.response.header.Access-Control-Max-Age": "'86400'"
        },
        "StatusCode": "204"
       }
@@ -1028,31 +937,29 @@
       "ResponseParameters": {
        "method.response.header.Access-Control-Allow-Headers": true,
        "method.response.header.Access-Control-Allow-Origin": true,
-       "method.response.header.Access-Control-Allow-Methods": true
+       "method.response.header.Access-Control-Allow-Methods": true,
+       "method.response.header.Access-Control-Max-Age": true
       },
       "StatusCode": "204"
      }
     ],
     "ResourceId": {
-     "Ref": "UserApiitemspartitionkeysortkeytranslationDF10B0BD"
+     "Ref": "UserApiitemspartitionkeysortkeytranslation614F0AC6"
     },
     "RestApiId": {
-     "Ref": "UserApiB6C12381"
+     "Ref": "UserApiE9AB1AD9"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/translation/OPTIONS/Resource"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/{partition_key}/{sort_key}/translation/OPTIONS/Resource"
    }
   },
-  "UserApiitemspartitionkeysortkeytranslationGETApiPermissionUserManagementApiStackUserApiD537B602GETitemspartitionkeysortkeytranslation8AAF42B1": {
+  "UserApiitemspartitionkeysortkeytranslationGETApiPermissionUserManagementApiStackUserApiB58EFCBAGETitemspartitionkeysortkeytranslationC0D6F0E7": {
    "Type": "AWS::Lambda::Permission",
    "Properties": {
     "Action": "lambda:InvokeFunction",
     "FunctionName": {
-     "Fn::GetAtt": [
-      "ItemLambdaB9B2602D",
-      "Arn"
-     ]
+     "Fn::ImportValue": "UserManagementLambdaStack:ExportsOutputFnGetAttItemLambdaB9B2602DArn5E898866"
     },
     "Principal": "apigateway.amazonaws.com",
     "SourceArn": {
@@ -1063,21 +970,13 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:",
+       ":execute-api:eu-west-1:491085400452:",
        {
-        "Ref": "AWS::Region"
-       },
-       ":",
-       {
-        "Ref": "AWS::AccountId"
-       },
-       ":",
-       {
-        "Ref": "UserApiB6C12381"
+        "Ref": "UserApiE9AB1AD9"
        },
        "/",
        {
-        "Ref": "UserApiDeploymentStageprod08A07725"
+        "Ref": "UserApiDeploymentStageprod97BF71A2"
        },
        "/GET/items/*/*/translation"
       ]
@@ -1085,18 +984,15 @@
     }
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/translation/GET/ApiPermission.UserManagementApiStackUserApiD537B602.GET..items.{partition_key}.{sort_key}.translation"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/{partition_key}/{sort_key}/translation/GET/ApiPermission.UserManagementApiStackUserApiB58EFCBA.GET..items.{partition_key}.{sort_key}.translation"
    }
   },
-  "UserApiitemspartitionkeysortkeytranslationGETApiPermissionTestUserManagementApiStackUserApiD537B602GETitemspartitionkeysortkeytranslation8A59554F": {
+  "UserApiitemspartitionkeysortkeytranslationGETApiPermissionTestUserManagementApiStackUserApiB58EFCBAGETitemspartitionkeysortkeytranslation73026EF5": {
    "Type": "AWS::Lambda::Permission",
    "Properties": {
     "Action": "lambda:InvokeFunction",
     "FunctionName": {
-     "Fn::GetAtt": [
-      "ItemLambdaB9B2602D",
-      "Arn"
-     ]
+     "Fn::ImportValue": "UserManagementLambdaStack:ExportsOutputFnGetAttItemLambdaB9B2602DArn5E898866"
     },
     "Principal": "apigateway.amazonaws.com",
     "SourceArn": {
@@ -1107,17 +1003,9 @@
        {
         "Ref": "AWS::Partition"
        },
-       ":execute-api:",
+       ":execute-api:eu-west-1:491085400452:",
        {
-        "Ref": "AWS::Region"
-       },
-       ":",
-       {
-        "Ref": "AWS::AccountId"
-       },
-       ":",
-       {
-        "Ref": "UserApiB6C12381"
+        "Ref": "UserApiE9AB1AD9"
        },
        "/test-invoke-stage/GET/items/*/*/translation"
       ]
@@ -1125,10 +1013,10 @@
     }
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/translation/GET/ApiPermission.Test.UserManagementApiStackUserApiD537B602.GET..items.{partition_key}.{sort_key}.translation"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/{partition_key}/{sort_key}/translation/GET/ApiPermission.Test.UserManagementApiStackUserApiB58EFCBA.GET..items.{partition_key}.{sort_key}.translation"
    }
   },
-  "UserApiitemspartitionkeysortkeytranslationGETF59387AF": {
+  "UserApiitemspartitionkeysortkeytranslationGET5B16B1D5": {
    "Type": "AWS::ApiGateway::Method",
    "Properties": {
     "AuthorizationType": "NONE",
@@ -1144,16 +1032,9 @@
         {
          "Ref": "AWS::Partition"
         },
-        ":apigateway:",
+        ":apigateway:eu-west-1:lambda:path/2015-03-31/functions/",
         {
-         "Ref": "AWS::Region"
-        },
-        ":lambda:path/2015-03-31/functions/",
-        {
-         "Fn::GetAtt": [
-          "ItemLambdaB9B2602D",
-          "Arn"
-         ]
+         "Fn::ImportValue": "UserManagementLambdaStack:ExportsOutputFnGetAttItemLambdaB9B2602DArn5E898866"
         },
         "/invocations"
        ]
@@ -1164,93 +1045,283 @@
      "method.request.querystring.language": true
     },
     "ResourceId": {
-     "Ref": "UserApiitemspartitionkeysortkeytranslationDF10B0BD"
+     "Ref": "UserApiitemspartitionkeysortkeytranslation614F0AC6"
     },
     "RestApiId": {
-     "Ref": "UserApiB6C12381"
+     "Ref": "UserApiE9AB1AD9"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UserApi/Default/items/{partition_key}/{sort_key}/translation/GET/Resource"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/items/{partition_key}/{sort_key}/translation/GET/Resource"
    }
   },
-  "ApiKeyF9DDEE66": {
-   "Type": "AWS::ApiGateway::ApiKey",
+  "UserApilanguages61F80CA7": {
+   "Type": "AWS::ApiGateway::Resource",
    "Properties": {
-    "Enabled": true,
-    "Name": "UserApiKey"
+    "ParentId": {
+     "Fn::GetAtt": [
+      "UserApiE9AB1AD9",
+      "RootResourceId"
+     ]
+    },
+    "PathPart": "languages",
+    "RestApiId": {
+     "Ref": "UserApiE9AB1AD9"
+    }
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/ApiKey/Resource"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/languages/Resource"
    }
   },
-  "UsagePlanC18B28F1": {
+  "UserApilanguagesOPTIONSF0720BF4": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "ApiKeyRequired": false,
+    "AuthorizationType": "NONE",
+    "HttpMethod": "OPTIONS",
+    "Integration": {
+     "IntegrationResponses": [
+      {
+       "ResponseParameters": {
+        "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'",
+        "method.response.header.Access-Control-Allow-Origin": "'*'",
+        "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,PUT,POST,DELETE,PATCH,HEAD'",
+        "method.response.header.Access-Control-Max-Age": "'86400'"
+       },
+       "StatusCode": "204"
+      }
+     ],
+     "RequestTemplates": {
+      "application/json": "{ statusCode: 200 }"
+     },
+     "Type": "MOCK"
+    },
+    "MethodResponses": [
+     {
+      "ResponseParameters": {
+       "method.response.header.Access-Control-Allow-Headers": true,
+       "method.response.header.Access-Control-Allow-Origin": true,
+       "method.response.header.Access-Control-Allow-Methods": true,
+       "method.response.header.Access-Control-Max-Age": true
+      },
+      "StatusCode": "204"
+     }
+    ],
+    "ResourceId": {
+     "Ref": "UserApilanguages61F80CA7"
+    },
+    "RestApiId": {
+     "Ref": "UserApiE9AB1AD9"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/languages/OPTIONS/Resource"
+   }
+  },
+  "UserApilanguagesGETApiPermissionUserManagementApiStackUserApiB58EFCBAGETlanguagesF5241FBE": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::ImportValue": "UserManagementLambdaStack:ExportsOutputFnGetAttItemLambdaB9B2602DArn5E898866"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:eu-west-1:491085400452:",
+       {
+        "Ref": "UserApiE9AB1AD9"
+       },
+       "/",
+       {
+        "Ref": "UserApiDeploymentStageprod97BF71A2"
+       },
+       "/GET/languages"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/languages/GET/ApiPermission.UserManagementApiStackUserApiB58EFCBA.GET..languages"
+   }
+  },
+  "UserApilanguagesGETApiPermissionTestUserManagementApiStackUserApiB58EFCBAGETlanguages2012F9AC": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::ImportValue": "UserManagementLambdaStack:ExportsOutputFnGetAttItemLambdaB9B2602DArn5E898866"
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:",
+       {
+        "Ref": "AWS::Partition"
+       },
+       ":execute-api:eu-west-1:491085400452:",
+       {
+        "Ref": "UserApiE9AB1AD9"
+       },
+       "/test-invoke-stage/GET/languages"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/languages/GET/ApiPermission.Test.UserManagementApiStackUserApiB58EFCBA.GET..languages"
+   }
+  },
+  "UserApilanguagesGET38723BB1": {
+   "Type": "AWS::ApiGateway::Method",
+   "Properties": {
+    "AuthorizationType": "NONE",
+    "HttpMethod": "GET",
+    "Integration": {
+     "IntegrationHttpMethod": "POST",
+     "Type": "AWS_PROXY",
+     "Uri": {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":apigateway:eu-west-1:lambda:path/2015-03-31/functions/",
+        {
+         "Fn::ImportValue": "UserManagementLambdaStack:ExportsOutputFnGetAttItemLambdaB9B2602DArn5E898866"
+        },
+        "/invocations"
+       ]
+      ]
+     }
+    },
+    "ResourceId": {
+     "Ref": "UserApilanguages61F80CA7"
+    },
+    "RestApiId": {
+     "Ref": "UserApiE9AB1AD9"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "UserManagementApiStack/UserApi/Api/Default/languages/GET/Resource"
+   }
+  },
+  "UserApiApiKey05989FFB": {
+   "Type": "AWS::ApiGateway::ApiKey",
+   "Properties": {
+    "Description": "用于访问用户管理API的密钥",
+    "Enabled": true,
+    "Name": "UserApiKey",
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "Production"
+     },
+     {
+      "Key": "Owner",
+      "Value": "APITeam"
+     },
+     {
+      "Key": "Project",
+      "Value": "UserManagementAPI"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "UserManagementApiStack/UserApi/ApiKey/Resource"
+   }
+  },
+  "UserApiUsagePlanC0D6DFA4": {
    "Type": "AWS::ApiGateway::UsagePlan",
    "Properties": {
     "ApiStages": [
      {
       "ApiId": {
-       "Ref": "UserApiB6C12381"
+       "Ref": "UserApiE9AB1AD9"
       },
       "Stage": {
-       "Ref": "UserApiDeploymentStageprod08A07725"
+       "Ref": "UserApiDeploymentStageprod97BF71A2"
       },
       "Throttle": {}
      }
     ],
+    "Description": "用户管理API的使用计划",
+    "Tags": [
+     {
+      "Key": "Environment",
+      "Value": "Production"
+     },
+     {
+      "Key": "Owner",
+      "Value": "APITeam"
+     },
+     {
+      "Key": "Project",
+      "Value": "UserManagementAPI"
+     }
+    ],
+    "Throttle": {
+     "BurstLimit": 20,
+     "RateLimit": 10
+    },
     "UsagePlanName": "UserApiUsagePlan"
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UsagePlan/Resource"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/UsagePlan/Resource"
    }
   },
-  "UsagePlanUsagePlanKeyResourceUserManagementApiStackApiKey913612BD9A278DA6": {
+  "UserApiUsagePlanUsagePlanKeyResourceUserManagementApiStackUserApiApiKey5F499AFF9AA024E5": {
    "Type": "AWS::ApiGateway::UsagePlanKey",
    "Properties": {
     "KeyId": {
-     "Ref": "ApiKeyF9DDEE66"
+     "Ref": "UserApiApiKey05989FFB"
     },
     "KeyType": "API_KEY",
     "UsagePlanId": {
-     "Ref": "UsagePlanC18B28F1"
+     "Ref": "UserApiUsagePlanC0D6DFA4"
     }
    },
    "Metadata": {
-    "aws:cdk:path": "UserManagementApiStack/UsagePlan/UsagePlanKeyResource:UserManagementApiStackApiKey913612BD"
+    "aws:cdk:path": "UserManagementApiStack/UserApi/UsagePlan/UsagePlanKeyResource:UserManagementApiStackUserApiApiKey5F499AFF"
    }
   },
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/22QT2/CMAzFPwv3kPFn0nYtTLugaVUZZ+SmpjOkSVUnQ1WU7z41LYPDTu/nvBfHzkouX5/lcgZXnqvqMtdUyrB3oC4CrnwMytaGnJXhwNjl1mqxPZk/vsFWExr3aI0nUVS9gcZWpQxfUGocIgmi0NCUFcjw7o1yZM1gPXKOXUPMZE0UBI0MhR3vJ82tJtWnXKIoeH0EZnQss0EEr+XGqwu6DTAKaKkGh1foZSiQXdZS6nXHTCnrjRNv2GrbN9M+D9XeQZ0GGKFAtr5TmNp/oPu21WBOdHOnR0bOWtphGnqiA0ONuQYzft1/xQ77GO/t0m7DAGTqIffpXetdFMZWKM/89LNayOWLXMzOTDTvvHHUoCxG/QVUH4DP7QEAAA=="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/22Ny2rDQAxFvyX7sRqHQrt1010IDQ5dF2WsuErmYSxNjTH+9+JOCil0pXPPBd0NlM+PUK5wkMI218LxCaajor0aHORjwo5bVBpwhKkm0apjsz2HO6ysjSmoeaXOxdFT0MXepaNiS4vLUJPE1Ft6QSGzJ/2MzVLe6Le9jWSuOt7R+DOW6V2wpYPDsLj/w47G2TB6mOro8rvoaDYO/alB2J7DgXrPIhzD/Gf2LWmXdDYhNgQXefjarKF8gvXqIsxFn4KyJ6jz/QYStWg7QAEAAA=="
    },
    "Metadata": {
     "aws:cdk:path": "UserManagementApiStack/CDKMetadata/Default"
-   },
-   "Condition": "CDKMetadataAvailable"
+   }
   }
  },
  "Outputs": {
-  "UserApiEndpoint22DD5314": {
+  "UserApiEndpointA031CF4C": {
    "Value": {
     "Fn::Join": [
      "",
      [
       "https://",
       {
-       "Ref": "UserApiB6C12381"
+       "Ref": "UserApiE9AB1AD9"
       },
-      ".execute-api.",
-      {
-       "Ref": "AWS::Region"
-      },
-      ".",
+      ".execute-api.eu-west-1.",
       {
        "Ref": "AWS::URLSuffix"
       },
       "/",
       {
-       "Ref": "UserApiDeploymentStageprod08A07725"
+       "Ref": "UserApiDeploymentStageprod97BF71A2"
       },
       "/"
      ]
@@ -1258,309 +1329,39 @@
    }
   },
   "ApiUrl": {
-   "Description": "URL of the API Gateway endpoint",
+   "Description": "API网关端点URL",
    "Value": {
     "Fn::Join": [
      "",
      [
       "https://",
       {
-       "Ref": "UserApiB6C12381"
+       "Ref": "UserApiE9AB1AD9"
       },
-      ".execute-api.",
-      {
-       "Ref": "AWS::Region"
-      },
-      ".",
+      ".execute-api.eu-west-1.",
       {
        "Ref": "AWS::URLSuffix"
       },
       "/",
       {
-       "Ref": "UserApiDeploymentStageprod08A07725"
+       "Ref": "UserApiDeploymentStageprod97BF71A2"
       },
       "/"
      ]
     ]
+   },
+   "Export": {
+    "Name": "UserManagementApiUrl"
    }
   },
   "ApiKeyId": {
-   "Description": "ID of the API key for protected endpoints",
+   "Description": "API密钥ID，用于保护的端点",
    "Value": {
-    "Ref": "ApiKeyF9DDEE66"
+    "Ref": "UserApiApiKey05989FFB"
+   },
+   "Export": {
+    "Name": "UserManagementApiKeyId"
    }
-  },
-  "ItemTableName": {
-   "Description": "Name of the DynamoDB table",
-   "Value": {
-    "Ref": "ItemTable276B2AC8"
-   }
-  }
- },
- "Conditions": {
-  "CDKMetadataAvailable": {
-   "Fn::Or": [
-    {
-     "Fn::Or": [
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "af-south-1"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "ap-east-1"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "ap-northeast-1"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "ap-northeast-2"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "ap-northeast-3"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "ap-south-1"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "ap-south-2"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "ap-southeast-1"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "ap-southeast-2"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "ap-southeast-3"
-       ]
-      }
-     ]
-    },
-    {
-     "Fn::Or": [
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "ap-southeast-4"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "ca-central-1"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "ca-west-1"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "cn-north-1"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "cn-northwest-1"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "eu-central-1"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "eu-central-2"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "eu-north-1"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "eu-south-1"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "eu-south-2"
-       ]
-      }
-     ]
-    },
-    {
-     "Fn::Or": [
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "eu-west-1"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "eu-west-2"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "eu-west-3"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "il-central-1"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "me-central-1"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "me-south-1"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "sa-east-1"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "us-east-1"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "us-east-2"
-       ]
-      },
-      {
-       "Fn::Equals": [
-        {
-         "Ref": "AWS::Region"
-        },
-        "us-west-1"
-       ]
-      }
-     ]
-    },
-    {
-     "Fn::Equals": [
-      {
-       "Ref": "AWS::Region"
-      },
-      "us-west-2"
-     ]
-    }
-   ]
   }
  },
  "Parameters": {

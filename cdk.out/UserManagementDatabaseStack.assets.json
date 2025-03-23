@@ -1,0 +1,20 @@
+{
+  "version": "40.0.0",
+  "files": {
+    "6f4632b73986f830f53ad0ea410a14924aec8b87114d385616606e3cf0e2af3f": {
+      "source": {
+        "path": "UserManagementDatabaseStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "491085400452-eu-west-1": {
+          "bucketName": "cdk-hnb659fds-assets-491085400452-eu-west-1",
+          "objectKey": "6f4632b73986f830f53ad0ea410a14924aec8b87114d385616606e3cf0e2af3f.json",
+          "region": "eu-west-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::491085400452:role/cdk-hnb659fds-file-publishing-role-491085400452-eu-west-1"
+        }
+      }
+    }
+  },
+  "dockerImages": {}
+}
